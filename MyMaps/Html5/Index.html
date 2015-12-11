@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>状态测试</title>
+    <script src="js/ammeterinfo.js"></script>
+    <script src="js/underscore.js"></script>
+    <script src="js/ammeters.js"></script>
+    <style>
+        #vv, #savelable {
+            background-color: cornflowerblue;
+            display: none;
+            height: 100px;
+            width: 150px;
+            position: absolute;
+
+        }
+        .search {
+            /*float: right;*/
+        }
+        .ammterlist {
+            border: 1px solid #c0c0c0;
+            margin: 30px;
+        }
+        .rangediv{
+            margin-top: 50px;;
+            display: block;
+        }
+    </style>
+</head>
+<body onload="Initmap()">
+<div style="position: relative;float: left">
+    <canvas id="canvasmap">
+
+    </canvas>
+</div>
+<div class="search">
+    <input id="searchText" type="text" placeholder="检
+    索表名">
+    <input type="button" value="检索" onclick="SearchAmmeter()">
+    <input type="button" value="标注" onclick="Setlabel()">
+    <input type="button" value="取消标注" onclick="Canclelable()">
+
+    <div class="ammterlist">
+        <input type="button" value="获取电表" onclick="getAmmeterList()"/>
+        <select id="ammterSelect">
+
+        </select>
+    </div>
+</div>
+<div id="vv">
+    这里是一个样式表
+</div>
+<div id="savelable">
+    <div id="ammInfo">
+
+    </div>
+    <input type="button" value="确定标注" onclick="saves()">
+    <input type="button" value="取消标注" onclick="cancles()">
+</div>
+<div class="rangediv">
+    <input type="range" id="zooms" max="3.0" min="0.6" step="0.4" value="1" onchange="zoomScale(this)">
+</div>
+<script>
+
+    function Initmap(scale) {
+
+        var $this=document.getElementById("zooms");
+        var scale=$this.value;
+        var canvas = document.getElementById("canvasmap");
+        var ctx = canvas.getContext("2d");
+        canvas.width = document.documentElement.clientWidth / 2;
+        canvas.height = document.documentElement.clientHeight / 2;
+        canvas.style.border = "1px solid #c0c0c0";
+//        console.log(canvas.width);
+        var image = new Image();
+        image.src = "image/Backmap.jpg";
+        image.onload = function () {
+            ctx.drawImage(image, 0, 0, canvas.width*scale, canvas.height*scale);
+            drawAmmeter(ctx,scale);
+
+        }
+//        setTimeout(drawAmmeter(ctx),1000);
+//        canvas.addEventListener()
+        canvas.addEventListener("click", viewAmmeterInfo)
+    }
+    var circles = [];
+    //画表
+    function drawAmmeter(canvas,scale) {
+        var ctx = canvas;
+
+        var errorammeter = [];
+        ctx.beginPath();
+        var radius = 10;
+        for (var i = 0; i < ammeterinfo.length; i++) {
+            var tt = ammeterinfo[i];
+            circles.push({x: tt.x, y: tt.y, radius: radius})
+            if (tt.status == 0) {
+                errorammeter.push(tt);
+            } else {
+                ctx.fillStyle = "blue";
+                ctx.arc(tt.x*scale, tt.y*scale, radius, 0, Math.PI * 2, true);
+            }
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        if (errorammeter.length > 0) {
+            ctx.beginPath();
+            for (var ii = 0; ii < errorammeter.length; ii++) {
+                var test = errorammeter[ii];
+                ctx.fillStyle = "red";
+                ctx.arc(test.x*scale, test.y*scale, 10, 0, Math.PI * 2, true);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+
+    }
+    //查看电表信息
+    function viewAmmeterInfo(even) {
+        var canvas = this;
+        var ctx = canvas.getContext("2d")
+
+        //得到鼠标当前的click位置
+        var mouse = getMousePoint();
+        var canvsxy = getPointOnCanvas(canvas, mouse);
+        for (var i = 0; i < circles.length; i++) {
+            var circle = circles[i];
+            if (IsClickThis(circle, canvsxy)) {
+                var $div = CreateAmmeterInfo(circle, ammeterinfo[i], "vv");
+
+            }
+        }
+
+    }
+    function getMousePoint(even) {
+        var e = even || window.event;
+//        return {x: e.layerX | e.offsetX, y: e.layerY | e.offsetY}
+        return {x: e.clientX, y: e.clientY};
+    }
+    //将当前坐标转换为canvas坐标
+    function getPointOnCanvas(canvas, mouse) {
+        var bbox = canvas.getBoundingClientRect();
+//        return{
+//            x:mouse.x-bbox.left,
+//            y:mouse.y-bbox.top
+//        }
+        return {
+            x: mouse.x - bbox.left * (canvas.width / bbox.width),
+            y: mouse.y - bbox.top * (canvas.height / bbox.height)
+        }
+    }
+    ///判断是否在当前区域
+    ///arc 圆，当前的圆点 和半径，
+    ///mousexy:鼠标点击的坐标
+    function IsClickThis(arc, canvsxy) {
+        var distx = parseInt(arc.x - canvsxy.x);
+        var disty = parseInt(arc.y - canvsxy.y);
+        var dist = Math.sqrt(distx * distx + disty * disty);
+//        console.log(dist+"--"+arc.radius);
+        if (parseInt(dist) <= arc.radius) {
+            return true;
+        }
+        return false;
+    }
+    ///创建电表详情元素
+    function CreateAmmeterInfo(ammeter, ammeterinfo, eleid, noclose) {
+        var $div = document.getElementById(eleid);
+        $div.style.top = parseInt(ammeter.y - 98) + "px";
+        $div.style.left = parseInt(ammeter.x - 148) + "px";
+        $div.style.display = "block";
+        $div.innerHTML += ammeterinfo.title;
+        if (!!!noclose) {
+            setTimeout(function () {
+                $div.style.display = "none";
+            }, 5000)
+        }
+        return $div;
+    }
+
+    ///查找某个表
+    function SearchAmmeter() {
+        var params = document.getElementById("searchText").value;
+        if (params) {
+//          var ammeter=  _.findWhere(ammeterinfo,{title:params});
+            var ammeter = _.filter(ammeterinfo, function (t) {
+                return t.title.indexOf(params) != -1;
+            })
+            if (ammeter.length > 0) {
+                CreateAmmeterInfo(ammeter[0], ammeter[0], "vv");
+            }
+        }
+    }
+    ///标注坐标点
+    function Setlabel() {
+        var canvas = document.getElementById("canvasmap");
+        canvas.style.cursor = "help";
+        canvas.removeEventListener("click", viewAmmeterInfo);
+        canvas.addEventListener("dblclick", Savelabel)
+    }
+    var dbclick={};
+    //保存标注
+    function Savelabel() {
+        var canvas = this;
+        var mouse = getMousePoint();
+        dbclick = getPointOnCanvas(canvas, mouse);
+        var obj = document.getElementById("ammterSelect");
+        var ammeter = {id: obj.options[obj.selectedIndex].value, title: obj.options[obj.selectedIndex].text};
+        CreateAmmeterInfo(dbclick, ammeter, "savelable", true);
+        var ammeterinfo = concatextend(dbclick, ammeter);
+        window.localStorage.setItem("ammeterinfo", ammeterinfo);
+
+        console.log(window.localStorage.getItem("ammeterinfo"))
+        console.log(canvaspoint)
+    }
+
+    function Canclelable() {
+        var canvas = document.getElementById("canvasmap");
+        canvas.style.cursor = "auto";
+        canvas.addEventListener("click", viewAmmeterInfo);
+        canvas.removeEventListener("dblclick", Savelabel)
+    }
+    //显示电表列表
+    function getAmmeterList() {
+        var $select = document.getElementById("ammterSelect");
+        for (var i = 0; i < ammeters.length; i++) {
+            var ammeter = ammeters[i];
+            $select.options[i] = new Option(ammeter.title, ammeter.id);
+        }
+    }
+    //合并对象
+    function concatextend(o, n, override) {
+        for (var p in n)if (n.hasOwnProperty(p) && (!o.hasOwnProperty(p) || override))o[p] = n[p];
+    }
+
+    //标注保存
+    function saves() {
+        var canvas = document.getElementById("canvasmap");
+        var ctx = canvas.getContext("2d");
+
+        ctx.beginPath()
+        ctx.fillStyle = "red";
+        ctx.arc(dbclick.x, dbclick.y, 10, 0, Math.PI * 2, true);
+        ctx.closePath();
+        ctx.fill();
+        console.log("标注成功");
+    }
+    function cancles() {
+        var disp = document.getElementById("savelable");
+        disp.style.display = "none";
+        console.log(disp);
+    }
+    //放大 缩小
+    function zoomScale(elen){
+
+        Initmap(elen.value);
+    }
+
+</script>
+</body>
+</html>

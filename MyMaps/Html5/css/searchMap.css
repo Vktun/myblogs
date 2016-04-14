@@ -1,0 +1,161 @@
+
+input:-moz-placeholder {
+    color: #888
+}
+
+.vbtn {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+
+}
+
+.vbtn:focus,
+.vbtn:active:focus,
+.vbtn.active:focus,
+.vbtn.focus,
+.vbtn:active.focus,
+.vbtn.active.focus {
+    outline: thin dotted;
+    outline: 5px auto -webkit-focus-ring-color;
+    outline-offset: -2px;
+}
+
+.vbtn:hover,
+.vbtn:focus,
+.vbtn.focus {
+    background-color: #c0c1c1;
+    color: #333;
+    text-decoration: none;
+}
+
+.vbtn:active,
+.vbtn.active {
+    background-image: none;
+    outline: 0;
+    -webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+}
+
+.vSearch {
+    padding: 0; /* Padding for other horizontal elements */
+    position: absolute;
+    top: 50px;
+    left: 30px;
+    background-color: rgba(0, 0, 0, .125);
+    border-radius: 10px;
+    opacity: 0.6;
+    display: table;
+}
+
+.vSearch-text {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 0;
+    display: table-cell;
+    border-radius: 5px;
+    border-style: dotted;
+    border-width: 2px;
+    height: 100%;
+}
+
+.vSearch-td {
+    display: table-cell;
+}
+
+.vbtn-submit {
+    background-color: #0065CB;
+    color: #FFFFFF;
+}
+
+.vbtn-submit:hover {
+    background-color: #0030C0;
+    color: #FFFFFF;
+}
+
+.vbtn-info {
+    background-color: #c0c0c0;
+    color: #FFFFFF;
+}
+
+.vbtn-info:hover {
+    background-color: #cccccc;
+    color: #FFFFFF;
+}
+
+.vbtn-xs {
+    padding: 1px 5px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px;
+}
+
+.vbtn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px;
+}
+
+#mapCanvas {
+    border: 1px solid #c0c0c0;
+}
+
+#markMeterInfo, #viewMeterInfo {
+    width: 260px;
+    border: 1px solid #999;
+    height: 200px;
+    position: absolute;
+    display: none;
+}
+#viewMeterInfo{
+    width: 240px;
+}
+.meterInfo-header {
+    background-color: #cccccc;
+    padding: 5px 10px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.meterInfo-content {
+    padding: 5px 10px;
+}
+
+.meterInfo-img {
+    z-index: 1;
+    position: absolute;
+    width: 58px;
+    height: 31px;
+    left: 100px;
+    bottom: -30px;
+    top: 200px;
+}
+
+.ul-content {
+    list-style: none;
+
+}
+
+.meterInfo-footer {
+    padding: 5px 5px;
+    text-align: right;
+}

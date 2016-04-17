@@ -12,7 +12,7 @@
         , circles = []//电表数组
         , radius = 10//电表画圆的半径
         , sqw = 16
-        , isDarg = false
+        , isDarg = false, isDarging = false
         , imgRedSrc = "image/maps2.png"
         , imgGreenSrc = "image/maps1.png"
         , imgYellowSrc = "image/maps3.png"
@@ -21,7 +21,7 @@
     context = canvas.getContext("2d");
     canvas.width = document.documentElement.clientWidth * 0.8;
     canvas.height = document.documentElement.clientHeight * 0.8;
-    imgView = {x: 0, y: 0};//图像起始点
+    imgView = { x: 0, y: 0 };//图像起始点
     scaleObj = document.getElementById("scaleCanvas") || {};
     scale = scaleObj.value || 1;
     maxScale = 1.6;
@@ -37,13 +37,13 @@
             drawImg();
             setTimeout(setRanger(), 1000);
         }
-
     }
 
     /**
      * 画图
      */
     function drawImg() {
+        warningArray = [];
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.drawImage(image, 0, 0, image.width, image.height, imgView.x, imgView.y, image.width * scale, image.height * scale);
         drawAmmetersUseImage();
@@ -57,7 +57,7 @@
      */
     var mousePoint = function (event) {
         var e = event || window.event;
-        return {x: e.clientX, y: e.clientY};
+        return { x: e.clientX, y: e.clientY };
     }
     /**
      * 鼠标在canvas上的坐标 mocp 1:1情况下
@@ -97,7 +97,6 @@
             if (parseInt(dist) <= sqw) {
                 return true;
             }
-
         } else {
             // 圆
             if (parseInt(dist) <= radius) {
@@ -107,15 +106,15 @@
         }
         return false;
     }
-
+    var timer;
     /**
      * 利用图片作为标注点
      */
     function drawAmmetersUseImage() {
         for (var i = 0; i < ammeterinfo.length; i++) {
             var tt = ammeterinfo[i];
-            circles.push({x: tt.x, y: tt.y, radius: radius, id: tt.id})
-            var point = {x: ((tt.x - sqw) * scale + imgView.x), y: ((tt.y - sqw) * scale + imgView.y), id: tt.id};
+            circles.push({ x: tt.x, y: tt.y, radius: radius, id: tt.id })
+            var point = { x: ((tt.x - sqw) * scale + imgView.x), y: ((tt.y - sqw) * scale + imgView.y), id: tt.id };
             if (tt.status == 0) {//异常状态的设备
                 drawSingleAmmeterImage(point, 1);
                 warningArray.push(point);
@@ -125,7 +124,13 @@
 
             }
         }
-        setInterval(warning, 1000);
+        if (timer) {
+            clearInterval(timer)
+        }
+        if (!isDarging) {
+            timer = setInterval(warning, 3000);
+        }
+
     }
 
     /**
@@ -187,6 +192,7 @@
          */
         var downMouse = mouseOnCanvasPoint(e);
         canvas.onmousemove = function (ev) {
+            isDarging = true;
             canvas.style.cursor = "move";
             /**
              * 鼠标移动时的坐标
@@ -202,6 +208,7 @@
             canvas.onmousemove = null;
             canvas.onmouseup = null;
             canvas.style.cursor = "default";
+            isDarging = false;
         }
     }
     /**

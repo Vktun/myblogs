@@ -19,7 +19,6 @@ input:-moz-placeholder {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none;
     background-image: none;
     border: 1px solid transparent;
     border-radius: 4px;
@@ -68,7 +67,6 @@ input:-moz-placeholder {
     position: relative;
     z-index: 2;
     margin-bottom: 0;
-    display: table-cell;
     border-radius: 5px;
     border-style: dotted;
     border-width: 2px;

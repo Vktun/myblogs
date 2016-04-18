@@ -1,57 +1,67 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>地图v0.1</title>
     <script src="js/ammeterinfo.js"></script>
     <script src="js/underscore.js"></script>
     <script src="js/ammeters.js"></script>
-    <link type="text/css" rel="stylesheet" href="css/searchMap.css"/>
+    <link type="text/css" rel="stylesheet" href="css/searchMap.css" />
 </head>
+
 <body>
-<div class="vSearch">
-    <input type="button" id="markLable" class="vbtn" value="标注"/>
-    <input type="button" id="delLable" class="vbtn" value="删除"/>
-    <input type="text" class="vSearch-text" placeholder="坐标名称">
-    <input type="button" class="vbtn vSearch-btn vbtn-submit" value="搜索">
-</div>
-<input type="range" id="scaleCanvas" value="1" max="1.6" min="0.4" step="0.2">
-<canvas id="mapCanvas"></canvas>
-<script src="js/maps-0.1.js"></script>
-<div id="markMeterInfo">
-    <div class="meterInfo-header">
-        添加标记
-    </div>
-    <div class="meterInfo-content">
-        <div style="margin: 10px 0">
-            <label>设备：</label>
-            <select id="meterId">
+    <div class="mapview">
+        <div class="vSearch">
+            <input type="button" id="markLable" class="vbtn" value="标注" />
+            <input type="button" id="delLable" class="vbtn" value="删除" />
+            <input type="text" class="vSearch-text" placeholder="坐标名称">
+            <input type="button" class="vbtn vSearch-btn vbtn-submit" value="搜索">
+        </div>
+        <div style="width:150px;">
+            <input type="range" id="scaleCanvas" value="1" max="2" min="0.4" step="0.2">
+        </div>
+        <canvas id="mapCanvas"></canvas>
+        <script src="js/maps-0.1.js"></script>
+        <div id="markMeterInfo">
+            <div class="meterInfo-header">
+                添加标记
+            </div>
+            <div class="meterInfo-content">
+                <div style="margin: 10px 0">
+                    <label>设备：</label>
+                    <select id="meterId">
                 <option>表1</option>
+                <option>表2</option>
+                <option>表3</option>
+                <option>表4</option>
             </select>
 
-        </div>
-        <div>
-            <label style="float: left">备注：</label>
-            <textarea style="margin-left:3px; " maxlength="200" rows="3"></textarea>
-        </div>
+                </div>
+                <div>
+                    <label style="float: left">备注：</label>
+                    <textarea style="margin-left:3px; " maxlength="200" rows="3"></textarea>
+                </div>
 
+            </div>
+            <div class="meterInfo-footer">
+                <input type="button" id="saveL" class="vbtn vbtn-info vbtn-xs" value="保存">
+                <input type="button" id="delL" class="vbtn vbtn-info vbtn-xs" value="取消">
+            </div>
+            <img src="image/iw_tail.png" class="meterInfo-img">
+        </div>
+        <div id="viewMeterInfo">
+            <div class="meterInfo-header text-center">
+                <strong id="meterName">表名</strong>
+            </div>
+            <ul class="meterInfo-content ul-content">
+                <li>状态：正常</li>
+                <li>ha哈1</li>
+                <li>lala</li>
+                <li>yeah!yeah!yeah!</li>
+            </ul>
+        </div>
     </div>
-    <div class="meterInfo-footer">
-        <input type="button" id="saveL" class="vbtn vbtn-info vbtn-xs" value="保存">
-        <input type="button" id="delL" class="vbtn vbtn-info vbtn-xs" value="取消">
-    </div>
-    <img src="image/iw_tail.png" class="meterInfo-img">
-</div>
-<div id="viewMeterInfo">
-    <div class="meterInfo-header text-center">
-        <strong id="meterName" >表名</strong>
-    </div>
-    <ul class="meterInfo-content ul-content">
-        <li>状态：正常</li>
-        <li>电压：230v</li>
-        <li>电压：230v</li>
-        <li>电压：230v</li>
-    </ul>
-</div>
 </body>
+
 </html>

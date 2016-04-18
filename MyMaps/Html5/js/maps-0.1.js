@@ -11,7 +11,7 @@
         , warningArray = []
         , circles = []//电表数组
         , radius = 10//电表画圆的半径
-        , sqw = 16
+        , sqw = 16, dragOffset = { x: 0, y: 0 }
         , isDarg = false, isDarging = false
         , imgRedSrc = "image/maps2.png"
         , imgGreenSrc = "image/maps1.png"
@@ -19,22 +19,22 @@
 
     canvas = document.getElementById("mapCanvas");
     context = canvas.getContext("2d");
-    canvas.width = document.documentElement.clientWidth * 0.8;
-    canvas.height = document.documentElement.clientHeight * 0.8;
+    canvas.width = document.documentElement.clientWidth - 20;
+    canvas.height = document.documentElement.clientHeight - 20;
     imgView = { x: 0, y: 0 };//图像起始点
     scaleObj = document.getElementById("scaleCanvas") || {};
-    scale = scaleObj.value || 1;
-    maxScale = 1.6;
+    scale = scaleObj.value || 0.8;
+    maxScale = 2;
     minScale = 0.4;
-    scaleStep = 0.4;
+    scaleStep = 0.2;
 
 
     loadImage();
     function loadImage() {
         image = new Image();
-        image.src = "image/Backmap.jpg";
-        image.onload = function (e) {
-            drawImg(e);
+        image.src = "image/background.jpg";
+        image.onload = function () {
+            drawImg();
             setTimeout(setRanger(), 1000);
         }
     }
@@ -42,17 +42,15 @@
     /**
      * 画图
      */
-    function drawImg(e) {
-
+    function drawImg() {
         warningArray = [];
         circles = [];
         context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(image, 0, 0, image.width, image.height, imgView.x, imgView.y, image.width * scale, image.height * scale);
+        context.drawImage(image, 0, 0, image.width, image.height, imgView.x + dragOffset.x * scale,
+            imgView.y + dragOffset.y * scale, image.width * scale, image.height * scale);
 
-        drawAmmetersUseImage(e);
+        drawAmmetersUseImage();
     }
-
-
     /**
      * 鼠标在屏幕的坐标
      * @param event
@@ -76,21 +74,6 @@
         }
     }
     /**
-     * 画布放大缩小后的坐标比例
-     */
-    var scalePoint = function () {
-
-    }
-
-    /**
-     * 画布显示的中心点
-     */
-    var centerPoint = function () {
-
-    }
-
-
-    /**
      * 判断是否在这个区域
      * @param circle 区域坐标
      * @param mocp 鼠标坐标
@@ -98,26 +81,10 @@
      */
     var isInArea = function (circle, mocp, isSq) {
 
-        var distx = parseInt((circle.x * scale + imgView.x) - (mocp.x * scale + imgView.x));
-        var disty = parseInt((circle.y * scale + imgView.y) - (mocp.y * scale + imgView.y));
-
+        var distx = parseInt((circle.x * scale + imgView.x + dragOffset.x * scale) - mocp.x);
+        var disty = parseInt((circle.y * scale + imgView.y + dragOffset.y * scale) - mocp.y);
         var dist = Math.ceil(Math.sqrt(distx * distx + disty * disty));
-
-        return context.isPointInPath(mocp.x, mocp.y);
-
-        // if (isSq == true) {
-        //     //计算方形的中心点
-        //     if (parseInt(dist) <= sqw) {
-        //         return true;
-        //     }
-        // } else {
-        //     // 圆
-        //     if (parseInt(dist) <= radius) {
-
-        //         return true;
-        //     }
-        // }
-        // return false;
+        return parseInt(dist) <= sqw;
     }
     var timer;
     /**
@@ -127,44 +94,42 @@
         for (var i = 0; i < ammeterinfo.length; i++) {
             var tt = ammeterinfo[i];
             circles.push({ x: tt.x, y: tt.y, radius: radius, id: tt.id })
-            var point = { x: ((tt.x - sqw) * scale + imgView.x), y: ((tt.y - sqw) * scale + imgView.y), id: tt.id };
+            var point = {
+                x: ((tt.x - sqw) * scale + imgView.x + dragOffset.x * scale),
+                y: ((tt.y - sqw) * scale + imgView.y + dragOffset.y * scale), id: tt.id
+            };
             if (tt.status == 0) {//异常状态的设备
                 drawSingleAmmeterImage(point, 1);
                 warningArray.push(point);
 
             } else {//正常状态的设备
                 drawSingleAmmeterImage(point, 2)
-
             }
-
-            drawCircle(point, e)
         }
         if (timer) {
             clearInterval(timer)
         }
         if (!isDarging) {
-            timer = setInterval(warning, 3000);
+            timer = setInterval(warning, 1000);
         }
 
     }
-    //画圆
+    //画圆-buyongle 
     function drawCircle(point, e) {
 
         context.beginPath();
         context.fillStyle = "rgba(0,0,0,0)";
         context.arc(point.x + sqw, point.y + sqw, sqw, 0, Math.PI * 2, true);
         context.fill();
-        
+
         var mocp = mouseOnCanvasPoint(e);
         if (context.isPointInPath(mocp.x, mocp.y)) {
             viewDetail(mocp);
         }
-        // else {
-        //     var detailDiv = document.getElementById("viewMeterInfo");
-        //     detailDiv.style.display = "none";
-        // }
-
-
+        else {
+            var detailDiv = document.getElementById("viewMeterInfo");
+            detailDiv.style.display = "none";
+        }
     }
     /**
      * 画出单个标注
@@ -172,24 +137,35 @@
      * @param colors 颜色，不输入0为黄色，2、红色，1、绿色，
      */
     function drawSingleAmmeterImage(point, colors) {
-        var id = point.id || 0;
         var img = new Image();
         img.src = imgYellowSrc;
-        //正常
-        if (colors && colors == 1) {
-            img.src = imgGreenSrc;
+        colors = colors || 0;
+        switch (parseInt(colors)) {
+            case 1:
+                img.src = imgGreenSrc;
+                break;
+            case 2:
+                img.src = imgRedSrc;
+                break;
         }
-        //不正常
-        if (colors && colors == 2) {
-            img.src = imgRedSrc;
+        if (img.complete) {
+            drawImgLable(img, point)
+        } else {
+            img.onload = function () {
+                drawImgLable(img, point)
+            }
         }
 
-        img.onload = function () {
-            context.drawImage(img, point.x, point.y);
-            context.fillStyle = "#fff";
-            context.strokeStyle = "#0f0";
-            context.fillText(id, point.x + sqw, point.y + sqw)
-        }
+    }
+    /**
+     * 画图标注点
+     */
+    function drawImgLable(img, point) {
+        var id = point.id || 0;
+        context.drawImage(img, point.x, point.y);
+        context.fillStyle = "#fff";
+        context.strokeStyle = "#0f0";
+        context.fillText(id, point.x + sqw, point.y + sqw)
     }
 
     /**
@@ -218,7 +194,6 @@
      * canvas上的鼠标移动事件
      */
     canvas.onmousedown = function (e) {
-
         /**
          * 点击鼠标时的坐标
          * @type {{x, y}}
@@ -232,10 +207,10 @@
              * @type {{x, y}}
              */
             var moveMouse = mouseOnCanvasPoint(ev);
-            imgView.x -= downMouse.x - moveMouse.x;
-            imgView.y -= downMouse.y - moveMouse.y;
+            dragOffset.x -= downMouse.x - moveMouse.x;
+            dragOffset.y -= downMouse.y - moveMouse.y;
             downMouse = moveMouse;
-            drawImg(ev);
+            drawImg();
         }
         canvas.onmouseup = function () {
             canvas.onmousemove = null;
@@ -248,24 +223,20 @@
      * 鼠标单击事件，显示当前信息
      * @param e 
      */
-    canvas.addEventListener("click", drawImg);
-    // canvas.onclick = function (e) {
-    //  drawImg();
-    // var mouse = mouseOnCanvasPoint(e);
-    // for (var i = 0; i < circles.length; i++) {
-    //     var circle = circles[i];
-    //        console.log(isInArea(circle, mouse, true))
-    //     if (isInArea(circle, mouse, true)) {
+    canvas.onclick = function (e) {
+        var mouse = mouseOnCanvasPoint(e);
+        for (var i = 0; i < circles.length; i++) {
+            var circle = circles[i];
+            if (isInArea(circle, mouse, true)) {
+                viewDetail(mouse);
+                break;
+            } else {
+                var detailDiv = document.getElementById("viewMeterInfo");
+                detailDiv.style.display = "none";
+            }
+        }
 
-    //         viewDetail(mouse);
-    //         break;
-    //     } else {
-    //         var detailDiv = document.getElementById("viewMeterInfo");
-    //         detailDiv.style.display = "none";
-    //     }
-    // }
-
-    // }
+    }
 
     /**
      * 鼠标悬浮，显示坐标详情
@@ -276,7 +247,7 @@
         detailDiv.style.top = mousexy.y + "px";
         detailDiv.style.left = mousexy.x + "px";
         detailDiv.style.display = "block";
-        setTimeout(function() {
+        setTimeout(function () {
             detailDiv.style.display = "none";
         }, 5000);
     }
@@ -312,28 +283,13 @@
 
         event.wheelDelta = event.wheelDelta ? event.wheelDelta : (event.deltaY * (-40));
         var isScale = Math.abs(scale) >= minScale && Math.abs(scale) <= maxScale;
-        if (event.wheelDelta > 0) {
-            scale = scale * 1 + scaleStep * 1;
-            if (isScale) {
-                scaleObj.value = scale;
-                var mouse = mouseOnCanvasPoint(event);
-
-                //imgView.x = imgView.x-Math.abs(image.width*(scale-1)/2) ;
-                //imgView.y = imgView.y-Math.abs(image.height*(scale-1)/2) ;
-                imgView.x = mouse.x - Math.abs(((mouse.x - imgView.x) / image.width) * Math.abs(image.width * (scale - 1))) - Math.abs(mouse.x - imgView.x);
-                imgView.y = mouse.y - Math.abs(((mouse.y - imgView.y) / image.width) * Math.abs(image.width * (scale - 1))) - Math.abs(mouse.y - imgView.y);
-                drawImg(event);
-            }
-        } else {
-            scale = scale * 1 - scaleStep * 1;
-            if (isScale) {
-                scaleObj.value = scale;
-                var mouse = mouseOnCanvasPoint(event);
-                imgView.x = mouse.x + Math.abs(((mouse.x - imgView.x) / image.width) * Math.abs(image.width * (scale - 1))) - Math.abs(mouse.x - imgView.x);
-                imgView.y = mouse.y + Math.abs(((mouse.y - imgView.y) / image.width) * Math.abs(image.width * (scale - 1))) - Math.abs(mouse.y - imgView.y);
-                drawImg(event);
-            }
-
+        scale = event.wheelDelta > 0 ? scale * 1 + scaleStep * 1 : scale * 1 - scaleStep * 1;
+        if (isScale) {
+            scaleObj.value = scale;
+            var mouse = mouseOnCanvasPoint(event);
+            imgView.x = mouse.x * (1 - scale);
+            imgView.y = mouse.y * (1 - scale);
+            drawImg();
         }
         stopBubble(event);
     }
@@ -347,10 +303,10 @@
      * @param directions 方向/位置
      */
     function setRanger(directions) {
-        scaleObj.style.top = (canvas.height - 20) + "px";
-        scaleObj.style.left = (canvas.width - 250) + "px";
-        scaleObj.style.position = "absolute";
-
+        var pdiv = scaleObj.parentNode;
+        pdiv.style.bottom = "20px";
+        pdiv.style.right = "160px";
+        pdiv.style.position = "absolute";
     }
 
     /**
